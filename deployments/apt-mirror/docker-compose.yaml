@@ -1,0 +1,26 @@
+version: '3'
+volumes:
+  runner-root-cache: {}
+services:
+  cron:
+    restart: always
+    image: apt-mirror
+    privileged: true
+    volumes:
+      - runner-root-cache:/root
+      - ./mirror-data:/var/spool/apt-mirror:rw
+      ###########################secrets
+      - ./secrets/cron.d/apt-mirror:/etc/cron.d/apt-mirror
+      - ./secrets/apt-mirror/mirror.list:/etc/apt/mirror.list
+  nginx:
+    restart: always
+    image: apt-mirror
+    ports:
+      - "80:80"
+      - "443:443"
+    command: ["nginx"]
+    volumes:
+      - ./mirror-data:/var/spool/apt-mirror:ro
+      ###########################secrets   
+      - ./secrets/nginx/:/etc/nginx/conf.d/
+
