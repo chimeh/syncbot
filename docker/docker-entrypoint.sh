@@ -33,7 +33,7 @@ fi
 
 
 
-RUNNER_TYPE="nginx"
+RUNNER_TYPE="aio"
 if [ $# -gt 0 ];then
     RUNNER_TYPE=$1
 fi
@@ -41,18 +41,27 @@ fi
 USAGE="
   usage:
   
-  $(basename $(realpath $0)) cron
+  $(basename $(realpath $0)) tunasync
   $(basename $(realpath $0)) nginx
 "
 echo "start ${RUNNER_TYPE}"
 
 case ${RUNNER_TYPE} in
-    cron)
-        exec cron -f
+    ts-manager)
+        exec tunasync manager --config /home/ts/.config/manager.conf
+        ;;
+    ts-worker)
+        exec tunasync worker --config /home/ts/.config/manager.conf
         ;;
     nginx)
         exec nginx -g 'daemon off;'
         ;;
+    aio)
+    # all in one
+        nginx
+
+        ;;
+         
     *)
         echo "unkown ${RUNNER_TYPE}"
         exec tail -f /dev/null

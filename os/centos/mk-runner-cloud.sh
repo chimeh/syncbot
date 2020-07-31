@@ -8,8 +8,8 @@ SCRIPT_DIR="$(dirname "$(realpath "${THIS_SCRIPT}")")"
 
 TC_DIR=/.src/mirror-server/os/centos/scripts/installers
 
-bash /.src/mirror-server/os/centos/scripts/0helper-yum.sh
-bash /.src/mirror-server/os/centos/scripts/0helper-basic.sh
+bash ${TC_DIR}/0helper-yum.sh
+bash ${TC_DIR}/0helper-basic.sh
 
 TCLIST=(
   go.sh

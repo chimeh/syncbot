@@ -80,30 +80,35 @@ function do_docker_push() {
     readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/${DOCKER_IMG}| tr '[A-Z]' '[a-z]')
     echo IMAGE_URL=$IMAGE_URL
     echo DOCKER_TAG=$DOCKER_TAG
-
-    docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG}
-    docker tag ${IMG_TMP} $IMAGE_URL:latest
+    if [[ ${STABLE_PUSH} -gt 0 ]];then
+      DOCKER_TAG_LATEST=latest
+    else
+      DOCKER_TAG_LATEST=latest-unstable
+    fi
+    docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG_LATEST}
     # maybe already login,try push
     set +e
-    docker push $IMAGE_URL:${DOCKER_TAG}
+    docker push $IMAGE_URL:${DOCKER_TAG_LATEST}
     rv=$?
     set -e
     # failed ,maybe not login, try login
     if [[ ${rv} -ne 0 ]];then
       docker login -u "${DOCKER_USER}" -p  "${DOCKER_PASS}" ${DOCKER_REPO}/${DOCKER_NS}
+      docker push $IMAGE_URL:${DOCKER_TAG_LATEST}
+    fi
+    echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
+    docker rmi $IMAGE_URL:${DOCKER_TAG_LATEST}
+
+    if [[ ${STABLE_PUSH} -gt 0 ]];then
+      docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG}
       docker push $IMAGE_URL:${DOCKER_TAG}
+      echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
+      set +e
+      docker rmi ${IMG_TMP}
+      docker rmi $IMAGE_URL:${DOCKER_TAG}
+      set -e
     fi
-    docker push $IMAGE_URL:latest
-    echo $IMAGE_URL:${DOCKER_TAG} | tee -a ${ARTIFACT_DIR}/img.txt
-    
-    if [[ -n ${MIRROR_DOCKER_PASS} ]];then
-      do_docker_mirror "$IMAGE_URL:${DOCKER_TAG}"
-    fi
-    set +e
-    docker rmi ${IMG_TMP}
-    docker rmi $IMAGE_URL:${DOCKER_TAG}
-    docker rmi $IMAGE_URL:latest
-    set -e
+
   else
     set +e
     docker rmi ${IMG_TMP}
@@ -113,34 +118,33 @@ function do_docker_push() {
 
 do_compose_gen() {
   mkdir -p ${ARTIFACT_DIR}
-  if [[ ${USE_PUSHED_IMG} -gt 0 ]];then
-    IMG="$(head -n 1 ${ARTIFACT_DIR}/img.txt)"
-  else
-    IMG=${IMG_TMP}
-  fi
+
+  IMG=${IMG_TMP}
   echo "Using Docker Image: ${IMG}"
   /bin/ls --color ${ARTIFACT_DIR}/*
-  /bin/cp -f ${ARTIFACT_DIR}/deployments/mirror-server ${ARTIFACT_DIR}/
+  /bin/cp -f ${ARTIFACT_DIR}/deployments/syncbot ${ARTIFACT_DIR}/
 
 
   set -e
-  perl -ni -e "s@^([# ]+image:).+@\1 ${IMG}@g;print" ${ARTIFACT_DIR}/s2erunner/docker-compose.yaml
-  cd ${ARTIFACT_DIR}/mirror-server/
+  perl -ni -e "s@^([# ]+image:).+@\1 ${IMG}@g;print" ${ARTIFACT_DIR}/syncbot/docker-compose*.yaml
+  cd ${ARTIFACT_DIR}/syncbot/
   docker-compose config
   # zip
   cd ${ARTIFACT_DIR}/
-  rm -rf "./s2erunner/.tpl" "./s2erunner/tpl" "./s2erunner/*.sh"
-  zip -r ${ARTIFACT_DIR}/compose-mirror-server-${DOCKER_TAG}.zip ./s2erunner
-  unzip -tvl ${ARTIFACT_DIR}/compose-s2erunner-${DOCKER_TAG}.zip
+  rm -rf "./syncbot/.tpl" "./syncbot/tpl" "./syncbot/*.sh"
+  /bin/cp ${ARTIFACT_DIR}/syncbot/docker-compose-allinone.yaml ${ARTIFACT_DIR}/syncbot/docker-compose.yaml
+  zip -r ${ARTIFACT_DIR}/compose-syncbot-${DOCKER_TAG}.zip ./syncbot
+  unzip -tvl ${ARTIFACT_DIR}/compose-syncbot-${DOCKER_TAG}.zip
 }
 
 do_compose_test() {
-  cd ${ARTIFACT_DIR}/s2erunner
+  /bin/cp ${ARTIFACT_DIR}/syncbot/docker-compose-allinone.yaml ${ARTIFACT_DIR}/syncbot/docker-compose.yaml
+  cd ${ARTIFACT_DIR}/syncbot
   docker-compose config
   docker-compose up --force-recreate -d
   sleep 20
   docker-compose ps
-  docker-compose exec -T runner ps aux
+  docker-compose exec -T syncbot ps aux
   docker-compose down
   docker-compose rm -f
 }
@@ -229,7 +233,7 @@ do_release() {
         --description - \
         --pre-release
     fi
-    FILE=$(/bin/ls ${ARTIFACT_DIR}/compose-mirror-server-${DOCKER_TAG}.zip)
+    FILE=$(/bin/ls ${ARTIFACT_DIR}/compose-syncbot-${DOCKER_TAG}.zip)
     github-release  upload \
         --user ${GITHUB_USER} \
         --repo ${GITHUB_REPO} \
@@ -244,16 +248,15 @@ do_release() {
 case ${ACTION} in
     dev)
         do_docker_build
-        export USE_PUSHED_IMG=0
         do_compose_gen
         do_compose_test
         ;;
     pre)
         do_docker_build
         do_docker_push
-        export USE_PUSHED_IMG=1
         do_compose_gen
         do_compose_test
+        do_docker_push
         do_release
         ;;
     *)
