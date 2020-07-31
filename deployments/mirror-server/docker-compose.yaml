@@ -2,7 +2,7 @@ version: '3'
 volumes:
   runner-root-cache: {}
 services:
-  cron:
+  ms:
     restart: always
     image: apt-mirror
     privileged: true
@@ -10,8 +10,7 @@ services:
       - runner-root-cache:/root
       - ./mirror-data:/var/spool/apt-mirror:rw
       ###########################secrets
-      - ./secrets/cron.d/apt-mirror:/etc/cron.d/apt-mirror
-      - ./secrets/apt-mirror/mirror.list:/etc/apt/mirror.list
+      - ./secrets/tunasync/: /home/ts/.config/tunasync
   nginx:
     restart: always
     image: apt-mirror
