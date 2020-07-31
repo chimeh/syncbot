@@ -30,6 +30,16 @@ if runon_aliyun;then
   sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
   exit 0
 fi
+
+# Huawei Cloud
+if runon_huaweicloud;then
+  echo "Run on Huawei Cloud"
+  sed -i 's|#\baseurl=https\?://mirror.centos.org/centos/$releasever|baseurl=http://mirrors.myhuaweicloud.com/centos/$releasever|' /etc/yum.repos.d/*.repo
+  yum install -y --nogpgcheck  epel-release
+  sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirrors.myhuaweicloud.com|' /etc/yum.repos.d/epel*
+  sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
+  exit 0
+fi
 if runon_cn;then
   true
   sed -i 's|#\(baseurl.*\)mirror.centos.org/centos/$releasever|\1mirrors.tuna.tsinghua.edu.cn/centos/$releasever|' /etc/yum.repos.d/*.repo
