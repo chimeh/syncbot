@@ -1,0 +1,19 @@
+version: '3'
+volumes:
+  syncbot-home-cache: {}
+services:
+  syncbot:
+    restart: always
+    image: ms-manager
+    privileged: true
+    volumes:
+      - syncbot-home-cache:/home/ts/
+      - ./mirror-data:/home/ts/mirror-data:rw
+      ###########################secrets
+      - ./secrets/tunasync/: /home/ts/.config/tunasync
+      - ./secrets/nginx/:/etc/nginx/conf.d/
+    ports:
+      - "80:80"
+      - "443:443"
+    command: ["aio"]
+

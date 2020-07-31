@@ -1,0 +1,46 @@
+version: '3'
+volumes:
+  syncbot-home-cache: {}
+services:
+  syncbot-manager:
+    restart: always
+    image: ms-manager
+    privileged: true
+    volumes:
+      - syncbot-home-cache:/home/ts/
+      - ./mirror-data:/home/ts/mirror-data:rw
+      ###########################secrets
+      - ./secrets/tunasync/: /home/ts/.config/tunasync
+    command: ["manager" "/home/ts/.config/tunasync/manager.conf"]
+  syncbot-worker-centos:
+    restart: always
+    image: apt-mirror
+    privileged: true
+    volumes:
+      - syncbot-home-cache:/home/ts/
+      - ./mirror-data:/home/ts/mirror-data:rw
+      ###########################secrets
+      - ./secrets/tunasync/: /home/ts/.config/tunasync
+    command: ["worker" "/home/ts/.config/tunasync/worker-centos.conf"]
+  syncbot-worker-ubuntu:
+    restart: always
+    image: apt-mirror
+    privileged: true
+    volumes:
+      - syncbot-home-cache:/home/ts/
+      - ./mirror-data:/home/ts/mirror-data:rw
+      ###########################secrets
+      - ./secrets/tunasync/: /home/ts/.config/tunasync
+    command: ["worker" "/home/ts/.config/tunasync/worker-ubuntu.conf"]
+  syncbot-nginx:
+    restart: always
+    image: apt-mirror
+    ports:
+      - "80:80"
+      - "443:443"
+    command: ["nginx"]
+    volumes:
+      - ./mirror-data:/home/ts/mirror-data:rw
+      ###########################secrets   
+      - ./secrets/nginx/:/etc/nginx/conf.d/
+
