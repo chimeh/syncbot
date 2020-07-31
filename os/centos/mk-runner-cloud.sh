@@ -10,6 +10,9 @@ TC_DIR=/.src/mirror-server/os/centos/scripts/installers
 
 bash ${TC_DIR}/0helper-yum.sh
 bash ${TC_DIR}/0helper-basic.sh
+#bash ${TC_DIR}/0helper-cmake.sh
+bash ${TC_DIR}/0helper-scm-tools.sh
+bash ${TC_DIR}/0helper-python.sh
 
 TCLIST=(
   go.sh

@@ -5,6 +5,7 @@ SCRIPT_DIR=$(dirname $(realpath ${THIS_SCRIPT}))
 
 source ${SCRIPT_DIR}/0helper-document.sh
 
+yum clean all
 yum makecache
 yum groupinstall -y 'Development Tools' 'Legacy UNIX Compatibility'
 
@@ -100,7 +101,7 @@ for ((i=0;i<=${cmd_test_sort_len};i++));do
   fi
 done
 
-bash ${SCRIPT_DIR}/0helper-make.sh
-bash ${SCRIPT_DIR}/0helper-scm-tools.sh
-bash ${SCRIPT_DIR}/0helper-python.sh
+#bash ${SCRIPT_DIR}/0helper-make.sh
+#bash ${SCRIPT_DIR}/0helper-scm-tools.sh
+#bash ${SCRIPT_DIR}/0helper-python.sh
 
