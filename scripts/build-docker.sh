@@ -59,7 +59,6 @@ readonly ARTIFACT_DIR="${SRC_TOP}/dist/${DOCKERFILE_NAME}"
 readonly SRC_VERSION=$(head -n 1 ${SRC_TOP}/VERSION)
 readonly SRC_SHA=-$(git describe --abbrev=1 --always | perl -n -e 'my @arr=split(/-/,$_); print $arr[-2]')
 readonly OS_DIST=$(echo ${DOCKERFILE_NAME} |cut -d. -f2)
-readonly DOCKER_TAG=$(echo ${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@--@-@;s@(.+)-$@\1@;print' )
 
 mkdir -p ${ARTIFACT_DIR}
 
@@ -72,18 +71,22 @@ function do_docker_build() {
 function do_docker_push() {
   readonly DOCKER_REPO=${DOCKER_REPO:-registry-1.docker.io}
   readonly DOCKER_NS=${DOCKER_NS:-bettercode}
-  readonly DOCKER_IMG=${REPO_NAME}
   readonly DOCKER_USER=${DOCKER_USER:-bettercode}
   readonly DOCKER_PASS=${DOCKER_PASS}
-
+  if [[ ${STABLE_PUSH} -gt 0 ]];then
+    readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/${REPO_NAME}| tr '[A-Z]' '[a-z]')
+    readonly DOCKER_TAG=$(echo ${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@--@-@;s@(.+)-$@\1@;print' )
+  else
+    readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/testimg| tr '[A-Z]' '[a-z]')
+    readonly DOCKER_TAG=$(echo ${REPO_NAME}-${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@--@-@;s@(.+)-$@\1@;print' )
+  fi
   if [[ -n ${DOCKER_PASS} ]];then
-    readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/${DOCKER_IMG}| tr '[A-Z]' '[a-z]')
     echo IMAGE_URL=$IMAGE_URL
     echo DOCKER_TAG=$DOCKER_TAG
     if [[ ${STABLE_PUSH} -gt 0 ]];then
       DOCKER_TAG_LATEST=latest
     else
-      DOCKER_TAG_LATEST=latest-unstable
+      DOCKER_TAG_LATEST=latest-$(echo ${REPO_NAME}| tr '[A-Z]' '[a-z]')
     fi
     docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG_LATEST}
     # maybe already login,try push
@@ -99,15 +102,13 @@ function do_docker_push() {
     echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
     docker rmi $IMAGE_URL:${DOCKER_TAG_LATEST}
 
-    if [[ ${STABLE_PUSH} -gt 0 ]];then
-      docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG}
-      docker push $IMAGE_URL:${DOCKER_TAG}
-      echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
-      set +e
-      docker rmi ${IMG_TMP}
-      docker rmi $IMAGE_URL:${DOCKER_TAG}
-      set -e
-    fi
+    docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG}
+    docker push $IMAGE_URL:${DOCKER_TAG}
+    echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
+    set +e
+    docker rmi ${IMG_TMP}
+    docker rmi $IMAGE_URL:${DOCKER_TAG}
+    set -e
 
   else
     set +e
@@ -124,7 +125,7 @@ do_compose_gen() {
   set +e
   /bin/ls --color ${ARTIFACT_DIR}/*
   set -e
-  /bin/cp -f ${ARTIFACT_DIR}/deployments/syncbot ${ARTIFACT_DIR}/
+  /bin/cp -f ${SRC_TOP}/deployments/syncbot ${ARTIFACT_DIR}/
 
 
   set -e
