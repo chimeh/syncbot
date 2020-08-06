@@ -26,6 +26,7 @@ do
    set +e; ls ${TC_DIR}/$s >/dev/null 2>&1; rv=$? ; set -e
    if [ ${rv} -eq 0 ];then
        echo "###${TC_DIR}/$s"
+       source /etc/profile
        bash ${TC_DIR}/validate-disk-space.sh
        set +e; bash ${TC_DIR}/$s; ok=$?;set -e
        if [ ${ok} -ne 0 ];then echo $s >> /error.txt;fi
