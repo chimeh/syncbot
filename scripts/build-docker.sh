@@ -125,7 +125,7 @@ do_compose_gen() {
   set +e
   /bin/ls --color ${ARTIFACT_DIR}/*
   set -e
-  /bin/cp -f ${SRC_TOP}/deployments/syncbot ${ARTIFACT_DIR}/
+  /bin/cp -rf ${SRC_TOP}/deployments/syncbot ${ARTIFACT_DIR}/
 
 
   set -e
