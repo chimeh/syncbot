@@ -35,6 +35,6 @@ do
    fi
 done
 
-bash /s2erunner-src/os/centos/scripts/installers/cleanup.sh;
+bash ${TC_DIR}/cleanup.sh;
 touch /error.txt; cat /error.txt; /bin/rm /error.txt;
 

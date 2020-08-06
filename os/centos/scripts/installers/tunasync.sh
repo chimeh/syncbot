@@ -13,7 +13,7 @@ if ! command -v go; then
     echo " go must install first"
     exit 1
 fi
-if runon_tencentcloud;then
+if runon_cn;then
   echo "on tencent cloud, use tencent mirror"
   export GOPROXY="http://mirrors.cloud.tencent.com/go/,https://goproxy.cn,direct"
 fi
@@ -23,7 +23,7 @@ useradd --home-dir /home/ts --create-home -user-group  --shell /bin/bash
 TSDIR=/home/ts
 mkdir -p ${TSDIR}
 cd ${TSDIR}
-https://github.com/tuna/tunasync-scripts ${TSDIR}/tunasync-scripts
+git clone --depth 1 https://github.com/tuna/tunasync-scripts.git ${TSDIR}/tunasync-scripts
 
 ln -sf ${TSDIR}/tunasync-scripts /home/scripts
     

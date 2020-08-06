@@ -98,11 +98,13 @@ function injectpath {
         *:"$1":*)
             ;;
         *)
+            set +o nounset
             if [ "$2" = "after" ] ; then
                 echo "export PATH="'$PATH'":$1" >> ${PATH_FILE}
             else
                 echo "export PATH=$1:"'$PATH'  >> ${PATH_FILE}
             fi
+            set -o nounset
     esac
     . ${PATH_FILE}
     export PATH

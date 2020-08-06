@@ -23,7 +23,7 @@ gpgkey=https://nginx.org/keys/nginx_signing.key
 module_hotfixes=true
 EOF
 
-yum --disablerepo=* --enablerepo=nginx-stable -y install nginx
+yum -y install nginx
 # Run tests to determine that the software installed as expected
 echo "check cmd run ok"
 for cmd in nginx; do

@@ -121,7 +121,9 @@ do_compose_gen() {
 
   IMG=${IMG_TMP}
   echo "Using Docker Image: ${IMG}"
+  set +e
   /bin/ls --color ${ARTIFACT_DIR}/*
+  set -e
   /bin/cp -f ${ARTIFACT_DIR}/deployments/syncbot ${ARTIFACT_DIR}/
 
 
