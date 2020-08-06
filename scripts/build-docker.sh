@@ -59,6 +59,7 @@ readonly ARTIFACT_DIR="${SRC_TOP}/dist/${DOCKERFILE_NAME}"
 readonly SRC_VERSION=$(head -n 1 ${SRC_TOP}/VERSION)
 readonly SRC_SHA=-$(git describe --abbrev=1 --always | perl -n -e 'my @arr=split(/-/,$_); print $arr[-2]')
 readonly OS_DIST=$(echo ${DOCKERFILE_NAME} |cut -d. -f2)
+readonly DOCKER_TAG=$(echo ${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@--@-@;s@(.+)-$@\1@;print' )
 
 mkdir -p ${ARTIFACT_DIR}
 
@@ -75,10 +76,9 @@ function do_docker_push() {
   readonly DOCKER_PASS=${DOCKER_PASS}
   if [[ ${STABLE_PUSH} -gt 0 ]];then
     readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/${REPO_NAME}| tr '[A-Z]' '[a-z]')
-    readonly DOCKER_TAG=$(echo ${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@--@-@;s@(.+)-$@\1@;print' )
   else
     readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/testimg| tr '[A-Z]' '[a-z]')
-    readonly DOCKER_TAG=$(echo ${REPO_NAME}-${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@--@-@;s@(.+)-$@\1@;print' )
+    readonly DOCKER_TAG=${REPO_NAME}-${DOCKER_TAG}
   fi
   if [[ -n ${DOCKER_PASS} ]];then
     echo IMAGE_URL=$IMAGE_URL
