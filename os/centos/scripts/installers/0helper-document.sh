@@ -4,11 +4,6 @@
 ##  Desc:  Helper functions for writing information to the metadata document
 ################################################################################
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
-
 DOC_FILE=${DOC_FILE:-/.buildnote.md}
 function WriteItem {
     if [ -z "$DOC_FILE" ]; then

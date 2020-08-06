@@ -5,10 +5,9 @@
 ################################################################################
 
 if ! command -v scurl; then
-  if  ! command -v curl; then
-    yum install -y curl
+  if  command -v curl; then
+    ln -s $(which curl) /usr/local/bin/scurl
   fi
-   ln -s $(which curl) /usr/local/bin/scurl
 fi > /dev/null
 
 # detect cloudinit
