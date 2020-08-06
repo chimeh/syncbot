@@ -41,7 +41,7 @@ function runon_aliyun ()
 function runon_huaweicloud ()
 {
   set +e
-  scurl --connect-timeout 1 http://169.254.169.254 >/dev/null 2>&1
+  scurl --connect-timeout 1 http://mirrors.myhuaweicloud.com >/dev/null 2>&1
   rv=$?
   set -e
   if [[ ${rv} -eq 0 ]];then
