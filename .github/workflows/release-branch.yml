@@ -34,7 +34,7 @@ jobs:
         
       - name: Build, Push image
         run: |
-          export DOCKER_PASS='${{ secrets.HUB_DOCKER_COM_PASS }}'
+          export DOCKER_PASS='${{ secrets.DOCKER_PASS }}'
           export GITHUB_TOKEN='${{ secrets.HUB_TOKEN }}'
           env
           make docker
