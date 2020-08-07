@@ -18,7 +18,9 @@ if runon_cn;then
   export GOPROXY="http://mirrors.cloud.tencent.com/go/,https://goproxy.cn,direct"
 fi
 
+set +e
 useradd --home-dir /home/ts --create-home --user-group  --shell /bin/bash ts
+set -e
 
 TSDIR=/home/ts
 mkdir -p ${TSDIR}
@@ -27,7 +29,7 @@ git clone --depth 1 https://github.com/tuna/tunasync-scripts.git ${TSDIR}/tunasy
 
 ln -sf ${TSDIR}/tunasync-scripts /home/scripts
     
-git clone --depth 1 https://github.com/tuna/tunasync.git ${TSDIR}/tunasync
+git clone --branch master https://github.com/tuna/tunasync.git ${TSDIR}/tunasync-src
 cd ${TSDIR}/tunasync-src
 git checkout ${TUNASYNC_TAG}
 make
