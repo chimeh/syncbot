@@ -16,6 +16,11 @@ wget -P /tmp http://smarden.org/runit/runit-${RUNIT_VER}.tar.gz && \
 /bin/cp -rf /tmp/admin/runit-${RUNIT_VER}/command/* /usr/local/bin/
 /bin/rm -rf /tmp/*
 
+curl -O /usr/local/bin/tini https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-arm64
+chmod +x /usr/local/bin/tini
+ln -s /usr/bin/tini /usr/local/bin/tini
+
+
 # Run tests to determine that the software installed as expected
 echo "Testing to make sure that script performed as expected, and basic scenarios work"
 cmd_test=(
