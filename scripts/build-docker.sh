@@ -89,7 +89,7 @@ function do_docker_push() {
     readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/${REPO_NAME}| tr '[A-Z]' '[a-z]')
     DOCKER_TAG_LATEST=latest
   else
-    readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/testimg| tr '[A-Z]' '[a-z]')
+    readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/test| tr '[A-Z]' '[a-z]')
     readonly DOCKER_TAG=${REPO_NAME}-${DOCKER_TAG}
     DOCKER_TAG_LATEST=latest-$(echo ${REPO_NAME}| tr '[A-Z]' '[a-z]')
   fi
