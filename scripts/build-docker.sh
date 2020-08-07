@@ -54,7 +54,7 @@ readonly REPO_NAME=$(basename ${SRC_TOP})
 readonly DOCKERFILE_DIR=$(dirname "$(realpath "${DOCKERFILE}")" | tr '[A-Z]' '[a-z]')
 readonly DOCKERFILE_NAME=$(basename ${DOCKERFILE} | tr '[A-Z]' '[a-z]')
 readonly IMG_TMP=$(echo "${REPO_NAME}-${DOCKERFILE_NAME}" | tr '[A-Z]' '[a-z]')
-readonly ARTIFACT_DIR="${SRC_TOP}/dist/${DOCKERFILE_NAME}"
+readonly ARTIFACT_DIR="${SRC_TOP}/dist/${REPO_NAME}-${DOCKERFILE_NAME}"
 
 readonly SRC_VERSION=$(head -n 1 ${SRC_TOP}/VERSION)
 readonly SRC_SHA=-$(git describe --abbrev=1 --always | perl -n -e 'my @arr=split(/-/,$_); print $arr[-2]')
@@ -68,6 +68,8 @@ function do_docker_build() {
   docker build . --file ${DOCKERFILE} --tag ${IMG_TMP}
   mkdir -p ${ARTIFACT_DIR}
   echo ${IMG_TMP} | tee -a ${ARTIFACT_DIR}/img.txt
+  echo -e "\n$(($(docker inspect ${IMG_TMP} --format='{{.Size}}')/1000/1000))MB\n" | tee -a ${ARTIFACT_DIR}/img-size.txt
+
 }
 
 function do_gen_buildnote() {
@@ -77,8 +79,7 @@ function do_gen_buildnote() {
   docker rm -v $cid
   echo -e "\n# Docker Img:\n" >> ${ARTIFACT_DIR}/buildnote.md
   echo -e "\n$IMAGE_URL:${DOCKER_TAG}\n" | tee -a ${ARTIFACT_DIR}/buildnote.md
-  echo -e "\n$(($(docker inspect ${IMG_TMP} --format='{{.Size}}')/1000/1000))MB\n" | tee -a ${ARTIFACT_DIR}/buildnote.md
-
+  echo -e "$(head -n 1 ${ARTIFACT_DIR}/img-size.txt )" | tee -a ${ARTIFACT_DIR}/buildnote.md
 }
 function do_docker_push() {
   readonly DOCKER_REPO=${DOCKER_REPO:-registry-1.docker.io}
@@ -109,13 +110,13 @@ function do_docker_push() {
 
     docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG}
     docker push $IMAGE_URL:${DOCKER_TAG}
-    echo $IMAGE_URL:${DOCKER_TAG} | tee -a ${ARTIFACT_DIR}/img.txt
+    echo $IMAGE_URL:${DOCKER_TAG}  > ${ARTIFACT_DIR}/img.txt
 
-    set +e
+    set +ev
     docker rmi $IMAGE_URL:${DOCKER_TAG_LATEST}
     docker rmi $IMAGE_URL:${DOCKER_TAG}
     docker rmi ${IMG_TMP}
-    set -e
+    set -ev
 
   else
     set +e
@@ -127,7 +128,7 @@ function do_docker_push() {
 do_compose_gen() {
   mkdir -p ${ARTIFACT_DIR}
 
-  IMG=${IMG_TMP}
+  IMG=$(head -n ${ARTIFACT_DIR}/img.txt)
   echo "Using Docker Image: ${IMG}"
   set +e
   /bin/ls --color ${ARTIFACT_DIR}/*
