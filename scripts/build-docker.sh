@@ -128,7 +128,7 @@ function do_docker_push() {
 do_compose_gen() {
   mkdir -p ${ARTIFACT_DIR}
 
-  IMG=$(head -n ${ARTIFACT_DIR}/img.txt)
+  IMG=$(head -n 1 ${ARTIFACT_DIR}/img.txt)
   echo "Using Docker Image: ${IMG}"
   set +e
   /bin/ls --color ${ARTIFACT_DIR}/*
