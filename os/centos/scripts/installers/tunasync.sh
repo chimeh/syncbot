@@ -18,7 +18,7 @@ if runon_cn;then
   export GOPROXY="http://mirrors.cloud.tencent.com/go/,https://goproxy.cn,direct"
 fi
 
-useradd --home-dir /home/ts --create-home -user-group  --shell /bin/bash
+useradd --home-dir /home/ts --create-home --user-group  --shell /bin/bash ts
 
 TSDIR=/home/ts
 mkdir -p ${TSDIR}
