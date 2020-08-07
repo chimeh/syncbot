@@ -63,12 +63,23 @@ readonly DOCKER_TAG=$(echo ${SRC_VERSION}-${OS_DIST}-${SRC_SHA} |perl -ni -e 's@
 
 mkdir -p ${ARTIFACT_DIR}
 
-
 function do_docker_build() {
 
   docker build . --file ${DOCKERFILE} --tag ${IMG_TMP}
+  mkdir -p ${ARTIFACT_DIR}
+  echo ${IMG_TMP} | tee -a ${ARTIFACT_DIR}/img.txt
 }
 
+function do_gen_buildnote() {
+  set +e
+  cid=$(docker create $(head -n 1 ${ARTIFACT_DIR}/img.txt))
+  docker cp $cid:/.buildnote.md ${ARTIFACT_DIR}/buildnote.md
+  docker rm -v $cid
+  echo -e "\n# Docker Img:\n" >> ${ARTIFACT_DIR}/buildnote.md
+  echo -e "\n$IMAGE_URL:${DOCKER_TAG}\n" | tee -a ${ARTIFACT_DIR}/buildnote.md
+  echo -e "\n$(($(docker inspect ${IMG_TMP} --format='{{.Size}}')/1000/1000))MB\n" | tee -a ${ARTIFACT_DIR}/buildnote.md
+
+}
 function do_docker_push() {
   readonly DOCKER_REPO=${DOCKER_REPO:-registry-1.docker.io}
   readonly DOCKER_NS=${DOCKER_NS:-bettercode}
@@ -76,18 +87,14 @@ function do_docker_push() {
   readonly DOCKER_PASS=${DOCKER_PASS}
   if [[ ${STABLE_PUSH} -gt 0 ]];then
     readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/${REPO_NAME}| tr '[A-Z]' '[a-z]')
+    DOCKER_TAG_LATEST=latest
   else
     readonly IMAGE_URL=$(echo ${DOCKER_REPO}/${DOCKER_NS}/testimg| tr '[A-Z]' '[a-z]')
     readonly DOCKER_TAG=${REPO_NAME}-${DOCKER_TAG}
+    DOCKER_TAG_LATEST=latest-$(echo ${REPO_NAME}| tr '[A-Z]' '[a-z]')
   fi
   if [[ -n ${DOCKER_PASS} ]];then
     echo IMAGE_URL=$IMAGE_URL
-    echo DOCKER_TAG=$DOCKER_TAG
-    if [[ ${STABLE_PUSH} -gt 0 ]];then
-      DOCKER_TAG_LATEST=latest
-    else
-      DOCKER_TAG_LATEST=latest-$(echo ${REPO_NAME}| tr '[A-Z]' '[a-z]')
-    fi
     docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG_LATEST}
     # maybe already login,try push
     set +e
@@ -99,14 +106,14 @@ function do_docker_push() {
       docker login -u "${DOCKER_USER}" -p  "${DOCKER_PASS}" ${DOCKER_REPO}/${DOCKER_NS}
       docker push $IMAGE_URL:${DOCKER_TAG_LATEST}
     fi
-    echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
-    docker rmi $IMAGE_URL:${DOCKER_TAG_LATEST}
 
     docker tag ${IMG_TMP} $IMAGE_URL:${DOCKER_TAG}
     docker push $IMAGE_URL:${DOCKER_TAG}
-    echo $IMAGE_URL:${DOCKER_TAG} > ${ARTIFACT_DIR}/img.txt
+    echo $IMAGE_URL:${DOCKER_TAG} | tee -a ${ARTIFACT_DIR}/img.txt
+
     set +e
     docker rmi ${IMG_TMP}
+    docker rmi $IMAGE_URL:${DOCKER_TAG_LATEST}
     docker rmi $IMAGE_URL:${DOCKER_TAG}
     set -e
 
@@ -251,15 +258,18 @@ do_release() {
 case ${ACTION} in
     dev)
         do_docker_build
+        STABLE_PUSH=0
+        do_docker_push
+        do_gen_buildnote
         do_compose_gen
         do_compose_test
         ;;
     pre)
         do_docker_build
+        STABLE_PUSH=1
         do_docker_push
         do_compose_gen
         do_compose_test
-        do_docker_push
         do_release
         ;;
     *)
