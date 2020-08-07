@@ -1,5 +1,7 @@
 FROM bettercode/scurl:latest as scurl
 FROM centos:7 as runner
+curl -O /usr/local/bin/tini https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-arm64
+ln -s /usr/bin/tini /usr/local/bin/tini
 COPY --from=scurl /usr/local/bin/scurl /usr/local/bin/scurl
 COPY docker /docker
 COPY . /.src/mirror-server

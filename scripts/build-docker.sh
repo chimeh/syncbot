@@ -112,9 +112,9 @@ function do_docker_push() {
     echo $IMAGE_URL:${DOCKER_TAG} | tee -a ${ARTIFACT_DIR}/img.txt
 
     set +e
-    docker rmi ${IMG_TMP}
     docker rmi $IMAGE_URL:${DOCKER_TAG_LATEST}
     docker rmi $IMAGE_URL:${DOCKER_TAG}
+    docker rmi ${IMG_TMP}
     set -e
 
   else
