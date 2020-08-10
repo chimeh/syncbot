@@ -48,18 +48,20 @@ echo "start ${RUNNER_TYPE}"
 
 case ${RUNNER_TYPE} in
     ts-manager)
-        exec tunasync manager --config /home/ts/.config/manager.conf
+        exec tunasync manager --config /home/ts/.config/tunasync/manager.conf
         ;;
     ts-worker)
-        exec tunasync worker --config /home/ts/.config/manager.conf
+        exec tunasync worker --config /home/ts/.config/tunasync/worker-allinone.conf
         ;;
     nginx)
-        exec nginx -g 'daemon off;'
+        exec nginx -g 'daemon off;error_log /dev/stdout info;'
         ;;
-    aio)
-    # all in one
-        nginx
-
+    allinone)
+    # run all svc in one container
+        nginx -g 'daemon off;error_log /dev/stdout info;' &
+        tunasync manager --config /home/ts/.config/tunasync/manager.conf &
+        tunasync worker --config /home/ts/.config/tunasync/worker-vyos-dev.conf &
+        wait -n
         ;;
          
     *)

@@ -25,6 +25,7 @@ set -e
 TSDIR=/home/ts
 mkdir -p ${TSDIR}
 cd ${TSDIR}
+pip3 install requests
 git clone --depth 1 https://github.com/tuna/tunasync-scripts.git ${TSDIR}/tunasync-scripts
 
 ln -sf ${TSDIR}/tunasync-scripts /home/scripts
@@ -34,6 +35,7 @@ cd ${TSDIR}/tunasync-src
 git checkout ${TUNASYNC_TAG}
 make
 /bin/cp -fv build/* /usr/local/bin/
+/bin/rm -rf build/
 cd ~
 
 

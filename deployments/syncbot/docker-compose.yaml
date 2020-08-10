@@ -8,7 +8,7 @@ services:
     privileged: true
     volumes:
       - syncbot-home-cache:/home/ts/
-      - ./mirror-data:/home/ts/mirror-data:rw
+      - ./mirror-data:/mirrors:rw
       ###########################secrets
       - ./secrets/tunasync/:/home/ts/.config/tunasync
       - ./secrets/nginx/:/etc/nginx/conf.d/
