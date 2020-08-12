@@ -15,7 +15,7 @@ if runon_tencentcloud;then
   echo "Run on Tencent Cloud"
   sed -i 's|^#\?\(baseurl.*\)mirror.centos.org/centos/$releasever|\1mirrors.tencentyun.com/centos/$releasever|g' /etc/yum.repos.d/*.repo
   yum install -y --nogpgcheck  epel-release
-  sed -i 's|^#?baseurl=https://download.fedoraproject.org/pub/epel|baseurl=http://mirrors.tencentyun.com/epel|g' /etc/yum.repos.d/epel*
+  sed -i 's|^#\?baseurl=https://download.fedoraproject.org/pub/epel|baseurl=http://mirrors.tencentyun.com/epel|g' /etc/yum.repos.d/epel*
   sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
   exit 0
 fi
@@ -23,9 +23,9 @@ fi
 
 if runon_aliyun;then
   echo "Run on Aliyun Cloud"
-  sed -i 's|^#?\(baseurl.*\)mirror.centos.org/centos/$releasever|baseurl=http://mirrors.cloud.aliyuncs.com/centos/$releasever|g' /etc/yum.repos.d/*.repo
+  sed -i 's|^#\?\(baseurl.*\)mirror.centos.org/centos/$releasever|baseurl=http://mirrors.cloud.aliyuncs.com/centos/$releasever|g' /etc/yum.repos.d/*.repo
   yum install -y --nogpgcheck  epel-release
-  sed -i 's|^#?\(baseurl.*\)download.fedoraproject.org/pub/epel|baseurl=https://mirrors.aliyun.com/epel|g' /etc/yum.repos.d/epel*
+  sed -i 's|^#\?\(baseurl.*\)download.fedoraproject.org/pub/epel|baseurl=https://mirrors.aliyun.com/epel|g' /etc/yum.repos.d/epel*
   sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
   exit 0
 fi
@@ -42,14 +42,14 @@ fi
 
 if runon_cn;then
   true
-  sed -i 's|^#?\(baseurl.*\)mirror.centos.org/centos/$releasever|\1mirrors.tuna.tsinghua.edu.cn/centos/$releasever|g' /etc/yum.repos.d/*.repo
+  sed -i 's|^#\?\(baseurl.*\)mirror.centos.org/centos/$releasever|\1mirrors.tuna.tsinghua.edu.cn/centos/$releasever|g' /etc/yum.repos.d/*.repo
   yum install -y --nogpgcheck  epel-release
-  sed -i 's|^#?\(baseurl.*\)download.fedoraproject.org/pub/epel|\1mirrors.tuna.tsinghua.edu.cn/epel|g' /etc/yum.repos.d/epel*
+  sed -i 's|^#\?\(baseurl.*\)download.fedoraproject.org/pub/epel|\1mirrors.tuna.tsinghua.edu.cn/epel|g' /etc/yum.repos.d/epel*
   sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
 else
-  sed -i 's|^#?\(baseurl.*\)mirror.centos.org/centos/$releasever|\1mirror.centos.org/centos/$releasever|g' /etc/yum.repos.d/*.repo
+  sed -i 's|^#\?\(baseurl.*\)mirror.centos.org/centos/$releasever|\1mirror.centos.org/centos/$releasever|g' /etc/yum.repos.d/*.repo
   yum install -y --nogpgcheck  epel-release
-  sed -i 's|^#?\(baseurl.*\)download.fedoraproject.org/pub/epel|\1mirrors.kernel.org/fedora-epel|g' /etc/yum.repos.d/epel*
+  sed -i 's|^#\?\(baseurl.*\)download.fedoraproject.org/pub/epel|\1mirrors.kernel.org/fedora-epel|g' /etc/yum.repos.d/epel*
   sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
 fi
 egrep "^baseurl" -r /etc/yum.repos.d |egrep -i -v vault
