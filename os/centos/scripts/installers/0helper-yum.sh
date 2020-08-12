@@ -8,7 +8,7 @@ ls /etc/yum.repos.d
 sed -i 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf
 sed -i 's/mirrorlist/#mirrorlist/' /etc/yum.repos.d/*.repo
 
-egrep "^baseurl" -r /etc/yum.repos.d |egrep -i -v vault
+egrep "baseurl" -r /etc/yum.repos.d |egrep -i -v vault
 
 # Tencent Cloud
 if runon_tencentcloud;then
